@@ -46,12 +46,15 @@ with open("input.txt", "r") as file:
 
 seed_index = 0
 result = sys.maxsize
+i = 0
 while seed_index + 2 < len(seeds):
     current_seed_id = int(seeds[seed_index])
     current_seed_max = current_seed_id + int(seeds[seed_index + 1])
     while current_seed_id < current_seed_max:
         transformed_input, skip = process_maps(int(current_seed_id), sys.maxsize, map_list)
         current_seed_id += skip
+        i += 1
+        print(i)
         if transformed_input < result:
             result = transformed_input
     seed_index += 2
