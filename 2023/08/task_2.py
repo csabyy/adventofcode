@@ -1,6 +1,7 @@
 import math
 import re
 
+
 instructions = None
 direction_map = {}
 with open("input.txt", "r") as file:
@@ -36,20 +37,30 @@ def traverse_map(initial_direction):
             current_node = direction_map.get(current_node[index])
 
 
+def get_rounds(round_a, offset_a, round_b, offset_b):
+    counter = 0
+    while counter < round_a:
+        fraction = (round_b * counter + (offset_b - offset_a)) / round_a
+        if fraction.is_integer():
+            return counter
+        counter += 1
+    return None
+
+
 def merge_cycles(cycle_a, cycle_b):
-    # TODO: iterate over every item
-    offset_a = cycle_a[0][0]
-    offset_b = cycle_b[0][0]
+    new_offsets = []
     round_a = cycle_a[1]
     round_b = cycle_b[1]
-    counter = 0
-    fraction = (round_b * counter + (offset_b - offset_a)) / round_a
-    while not fraction.is_integer():
-        fraction = (round_b * counter + (offset_b - offset_a)) / round_a
-        counter += 1
-    new_offset = offset_b + round_b * counter
-    new_round = math.lcm(round_a, round_b)
-    return [new_offset], new_round
+    for cycle_a_item in cycle_a[0]:
+        offset_a = cycle_a_item
+        for cycle_b_item in cycle_b[0]:
+            offset_b = cycle_b_item
+            rounds = get_rounds(round_a, offset_a, round_b, round_b )
+            if rounds:
+                new_offset = offset_b + round_b * rounds
+                new_offsets.append(new_offset)
+    return new_offsets, math.lcm(round_a, round_b)
+
 
 cycles = []
 for direction in direction_map:
@@ -63,4 +74,4 @@ while counter < len(cycles) - 1:
     merged = merge_cycles(cycles[counter + 1], merged)
     counter += 1
 
-print(merged[0][0])
+print(min(merged[0]))
