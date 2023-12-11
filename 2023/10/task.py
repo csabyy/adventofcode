@@ -120,4 +120,4 @@ for map_line_index, map_line in enumerate(map_lines):
             if is_inside:
                 result_counter += 1
 
-print("Second task" + str(result_counter))
+print("Second task: " + str(result_counter))
