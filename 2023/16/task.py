@@ -1,4 +1,5 @@
 from enum import Enum
+from collections import deque
 
 
 class Direction(Enum):
@@ -76,21 +77,16 @@ def get_new_coordinates(x, y, symbol, previous_direction):
 
 
 def move_beam(x, y, direction, visited_map, cache):
-    new_coordinates_list = []
-    while (0 <= x < len(mirror_map[0]) and 0 <= y < len(mirror_map)) and add_to_cache(cache, x, y, direction):
-        add_to_map(visited_map, x, y)
-        current_symbol = mirror_map[y][x]
-        new_coordinates_list = get_new_coordinates(x, y, current_symbol, direction)
-        if len(new_coordinates_list) != 1:
-            break
-        new_x, new_y, new_direction = new_coordinates_list[0]
-        x = new_x
-        y = new_y
-        direction = new_direction
-    if len(new_coordinates_list) == 2:
-        for new_coordinates in new_coordinates_list:
-            new_x, new_y, new_direction = new_coordinates
-            move_beam(new_x, new_y, new_direction, visited_map, cache)
+    new_coordinates_list = deque([(x, y, direction)])
+    while len(new_coordinates_list) > 0:
+        current_x, current_y, current_dir = new_coordinates_list.popleft()
+        if not (0 <= current_x < len(mirror_map[0]) and 0 <= current_y < len(mirror_map)):
+            continue
+        if not add_to_cache(cache, current_x, current_y, current_dir):
+            continue
+        add_to_map(visited_map, current_x, current_y)
+        current_symbol = mirror_map[current_y][current_x]
+        new_coordinates_list.extend(get_new_coordinates(current_x, current_y, current_symbol, current_dir))
     return visited_map
 
 
