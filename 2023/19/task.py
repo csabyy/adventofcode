@@ -5,6 +5,12 @@ class Expression:
         self.value_to_compare = value_to_compare
 
 
+def negate_expression(expression):
+    return Expression(not expression.is_less_than,
+                      expression.key_to_compare,
+                      expression.value_to_compare - 1 if expression.is_less_than else expression.value_to_compare + 1)
+
+
 def parse_condition(condition_raw):
     is_less_than = False
     split_index = condition_raw.find(">")
@@ -58,6 +64,33 @@ with open("input.txt", "r") as file:
             ratings.append(parse_ratings(line.strip()))
 
 
+def create_optimised_tree_rec(current_workflow_item, condition_accumulator, results):
+    condition = current_workflow_item[0]
+    true_branch = current_workflow_item[1]
+    false_branch = current_workflow_item[2]
+
+    if true_branch == "A":
+        results.append(condition_accumulator + [condition])
+    if false_branch == "A":
+        results.append(condition_accumulator + [negate_expression(condition)])
+    if true_branch == "A" and false_branch == "A":
+        return "A"
+    if true_branch == "R" and false_branch == "R":
+        return "R"
+
+    if true_branch != "A" and true_branch != "R":
+        workflow_item = true_branch if type(true_branch) == tuple else workflows[true_branch]
+        true_branch = create_optimised_tree_rec(workflow_item, condition_accumulator + [condition], results)
+
+    if false_branch != "A" and false_branch != "R":
+        workflow_item = false_branch if type(false_branch) == tuple else workflows[false_branch]
+        false_branch = create_optimised_tree_rec(workflow_item, condition_accumulator + [negate_expression(condition)],
+                                                 results)
+
+    return condition, None if (not true_branch or true_branch == "R") else true_branch, None if (
+            not false_branch or false_branch == "R") else false_branch
+
+
 def process_rating(current_workflow_item, current_rating):
     if type(current_workflow_item) != tuple:
         current_item = current_workflow_item
@@ -85,3 +118,44 @@ for current_rating in ratings:
     if process_rating(workflows["in"], current_rating):
         result += get_rating_value(current_rating)
 print(result)
+
+expressions_list = []
+create_optimised_tree_rec(workflows["in"], [], expressions_list)
+
+
+def get_result(min_value, max_value):
+    merged_map_list = []
+    for expressions in expressions_list:
+        merged_map = {}
+        for expression in expressions:
+            if expression.key_to_compare in merged_map:
+                current_min, current_max = merged_map[expression.key_to_compare]
+                if expression.is_less_than:
+                    merged_map[expression.key_to_compare] = (
+                        current_min, min(current_max, expression.value_to_compare - 1))
+                else:
+                    merged_map[expression.key_to_compare] = (max(current_min, expression.value_to_compare), current_max)
+            else:
+                if expression.is_less_than:
+                    merged_map[expression.key_to_compare] = (min_value, expression.value_to_compare - 1)
+                else:
+                    merged_map[expression.key_to_compare] = (expression.value_to_compare, max_value)
+        merged_map_list.append(merged_map)
+    return merged_map_list
+
+
+result_list = get_result(0, 4_000)
+
+letters = ["x", "m", "a", "s"]
+r = 0
+for result in result_list:
+    combinations = 1
+    for letter in letters:
+        if letter in result:
+            letter_min, letter_max = result[letter]
+            combinations *= (letter_max - letter_min)
+        else:
+            combinations *= 4000
+    r += combinations
+
+print(r)
