@@ -39,6 +39,7 @@ def get_possible_tiles(current_position, garden_matrix, visited_tiles):
         possible_tiles.append((current_y, current_x + 1))
     return possible_tiles
 
+
 def visualise_visited_tiles(visited_tiles):
     for visited_tile_line in visited_tiles:
         buffer = ""
@@ -47,54 +48,34 @@ def visualise_visited_tiles(visited_tiles):
         print(buffer)
 
 
-def dedupe_tiles(tiles):
-    tile_map = {}
-    for tile in tiles:
-        if tile[0] in tile_map:
-            tile_map[tile[0]].add(tile[1])
-        else:
-            tile_map[tile[0]] = {tile[1]}
-    deduped = []
-    for key, value in tile_map.items():
-        for set_item in value:
-            deduped.append((key, set_item))
-    return deduped
-
-def traverse_garden(current_position, garden_matrix, max_steps):
+def traverse_garden(start_position, garden_matrix, max_steps):
+    result_counter = 0
     visited_tiles = init_visited_tiles(garden_matrix)
-    tiles = current_position
+    visited_tiles[start_position[0]][start_position[1]] = True
     current_steps = 0
-    new_tiles_per_step = [1]
+    tiles = [start_position]
+
     while len(tiles) > 0 and current_steps < max_steps:
+        if current_steps % 2 == max_steps % 2:
+            result_counter += len(tiles)
         tiles_next = []
         for tile in tiles:
-            if visited_tiles[tile[0]][tile[1]]:
-                continue
-            visited_tiles[tile[0]][tile[1]] = True
             next_tiles = get_possible_tiles(tile, garden_matrix, visited_tiles)
             for next_tile in next_tiles:
+                visited_tiles[next_tile[0]][next_tile[1]] = True
                 tiles_next.append(next_tile)
         tiles = tiles_next
-        new_tiles_per_step.append(len(tiles))
         current_steps += 1
+    if len(tiles) > 0 and current_steps % 2 == max_steps % 2:
+        result_counter += len(tiles)
     # visualise_visited_tiles(visited_tiles)
-    return new_tiles_per_step
-
-
-def get_possible_location_count(new_tiles_per_step):
-    counter = len(new_tiles_per_step) - 1
-    result = 0
-    while counter > -1:
-        result += new_tiles_per_step[counter]
-        counter -= 2
-    return result
+    return result_counter
 
 
 
 garden_map, start_pos = init_garden_map()
 start = time.time()
-new_locations = traverse_garden([start_pos], garden_map, 7000)
-print("First task:", get_possible_location_count(new_locations))
+for i in range(0, 11):
+    print("First task:",  traverse_garden(start_pos, garden_map, 10 + i * 11))
 end = time.time()
-
 print(f"Time taken to run the code was {end-start} seconds")
