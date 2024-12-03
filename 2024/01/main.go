@@ -76,17 +76,14 @@ func readFile(filePath string) ([]int, []int, error) {
 }
 
 func main() {
-	// Specify the file path
-	filePath := "input.txt"
+	filePath := "01/data.txt"
 
-	// Read the file and get the arrays
 	arrayA, arrayB, err := readFile(filePath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// Execute the tasks
 	task1(arrayA, arrayB)
 	task2(arrayA, arrayB)
 }
