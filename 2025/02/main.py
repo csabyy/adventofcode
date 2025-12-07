@@ -29,9 +29,8 @@ def process_interval_2(min_value, max_value, invalid_ids, all_divisors):
             if first_chunk_length != len(str(first_chunk)):
                 break
             number_to_check = int(str(first_chunk) * (min_value_length // divisor))
-    process_interval_2(pow(10, len(str(min_value))), max_value, invalid_ids, all_divisors)
+    process_interval_2(pow(10, min_value_length), max_value, invalid_ids, all_divisors)
 
-result = 0
 invalid_ids_1 = set()
 invalid_ids_2 = set()
 with open("input.txt", "r") as file:
