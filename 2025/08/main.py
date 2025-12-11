@@ -11,12 +11,8 @@ class Coordinate:
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
-    def __str__(self):
-        return str(self.x) + ", " + str(self.y) + ", " + str(self.z)
-
     def __hash__(self):
         return hash((self.x, self.y, self.z))
-
 
 
 class Connection:
@@ -31,29 +27,17 @@ class Connection:
     def __lt__(self, other):
         return self.distance < other.distance
 
-    def __str__(self):
-        return str(self.distance) + " (" + str(self.from_coordinate) + ") (" + str(self.to_coordinate) + ")"
-
 
 def get_distance_matrix(coordinates):
-    matrix = []
     heap = []
     heapify(heap)
-
     for (index_from, from_coordinate) in enumerate(coordinates):
-        counter = 0
-        row = []
-        while counter < index_from:
-            row.append(0)
-            counter += 1
         for (index_to, to_coordinate) in enumerate(coordinates[index_from + 1:]):
             distance = math.sqrt(
                 (from_coordinate.x - to_coordinate.x) ** 2 + (from_coordinate.y - to_coordinate.y) ** 2 + (
                         from_coordinate.z - to_coordinate.z) ** 2)
             heappush(heap, Connection(from_coordinate, to_coordinate, distance))
-            row.append(distance)
-        matrix.append(row)
-    return matrix, heap
+    return heap
 
 
 def process_input():
@@ -64,28 +48,37 @@ def process_input():
             coordinates.append(Coordinate(int(xyz[0]), int(xyz[1]), int(xyz[2])))
         return coordinates
 
+
 def add_to_circuits(circuits, connection):
+    from_circuit_match = None
+    to_circuit_match = None
     for existing_circuit in circuits:
-        # TODO: merge multiple circuits
         if connection.from_coordinate in existing_circuit and connection.to_coordinate in existing_circuit:
-            return 0
+            return
         if connection.from_coordinate in existing_circuit:
-            existing_circuit.add(connection.to_coordinate)
-            return 1
-        if connection.to_coordinate in existing_circuit:
-            existing_circuit.add(connection.from_coordinate)
-            return 1
-    circuits.append({connection.from_coordinate, connection.to_coordinate})
-    return 1
+            from_circuit_match = existing_circuit
+        elif connection.to_coordinate in existing_circuit:
+            to_circuit_match = existing_circuit
+
+    if from_circuit_match is not None and to_circuit_match is not None:
+        circuits.remove(to_circuit_match)
+        for to_circuit in to_circuit_match:
+            from_circuit_match.add(to_circuit)
+    elif from_circuit_match is not None:
+        from_circuit_match.add(connection.to_coordinate)
+    elif to_circuit_match is not None:
+        to_circuit_match.add(connection.from_coordinate)
+    else:
+        circuits.append({connection.from_coordinate, connection.to_coordinate})
 
 
 (distance_matrix, heap) = get_distance_matrix(process_input())
 counter = 0
 circuits = []
-
-while counter < min(10, len(heap)):
+while counter < min(1000, len(heap)):
     smallest_distance_connection = heappop(heap)
-    counter += add_to_circuits(circuits, smallest_distance_connection)
+    add_to_circuits(circuits, smallest_distance_connection)
+    counter += 1
 
 heap2 = []
 heapify(heap2)
@@ -95,12 +88,6 @@ for circuit in circuits:
     elif len(circuit) > heap2[0]:
         heapreplace(heap2, len(circuit))
 
-    for coord in circuit:
-        print(coord)
-    print("------")
-
-
-print(heap2)
 result = 1
 while len(heap2) > 0:
     result *= heappop(heap2)
