@@ -110,7 +110,7 @@ def main():
     circuits = []
     nodes_connected = 0
     counter = 0
-    while counter < len(distance_heap):
+    while len(distance_heap) > 0:
         connection = heappop(distance_heap)
         newly_connected, result2 = merge_or_add_connection(circuits, connection, nodes_connected, len(nodes))
         nodes_connected += newly_connected
