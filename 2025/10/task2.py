@@ -8,31 +8,13 @@ def apply_button_to_current_joltage_state(current_state, button_to_apply):
     return new_current_state
 
 
-def is_button_allowed(forbidden_light_indexes, button_schema):
-    for light_index in button_schema:
-        if light_index in forbidden_light_indexes:
-            return False
-    return True
-
-
 def filter_buttons_by_joltage(buttons, current_state):
-    forbidden_light_index = set()
-    for current_state_key, current_state_value in enumerate(current_state):
-        if current_state_value <= 0:
-            forbidden_light_index.add(current_state_key)
-    allowed_button_schema = []
-    for button_schema in buttons:
-        if is_button_allowed(forbidden_light_index, button_schema):
-            allowed_button_schema.append(button_schema)
-    return allowed_button_schema
+    forbidden = {i for i, value in enumerate(current_state) if value <= 0}
+    return [btn for btn in buttons if forbidden.isdisjoint(btn)]
 
 
 def filter_button(buttons, include, exclude):
-    filtered_buttons = []
-    for btn in buttons:
-        if exclude not in btn and include in btn:
-            filtered_buttons.append(btn)
-    return filtered_buttons
+    return [btn for btn in buttons if include in btn and exclude not in btn]
 
 
 def find_button_press(current_state, config_value):
@@ -74,7 +56,6 @@ def process_joltages_rec(initial_state, config_value):
                 return current_work_item[2]
 
             work_items.append((new_state, find_button_press(new_state, config_value), current_work_item[2] + 1))
-    return 0
 
 
 def process_joltages(config_values):
