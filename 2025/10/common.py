@@ -29,10 +29,9 @@ def load_config_from_file(filename):
                 for btn in button.split(","):
                     button_lights.append(int(btn))
                 button_config.append(button_lights)
-            joltage_config = {}
-            for joltage_ix, joltage in enumerate(re.search("\\{.*}", line).group()[1:-1].split(",")):
-                joltage_config[joltage_ix] = int(joltage)
-            config_value = ConfigValue(light_config, button_config, joltage_config)
-            config_values.append(config_value)
+            joltage_config = []
+            for joltage in re.search("\\{.*}", line).group()[1:-1].split(","):
+                joltage_config.append(int(joltage))
+            config_values.append(ConfigValue(light_config, button_config, joltage_config))
 
         return config_values
