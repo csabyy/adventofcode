@@ -1,3 +1,4 @@
+import collections
 from common import *
 
 
@@ -41,16 +42,16 @@ def find_button_press(current_state, config_value):
 
 
 def process_joltages_rec(initial_state, config_value):
-    work_items = [initial_state]
+    work_items = collections.deque()
+    work_items.append(initial_state)
     visited_states = set()
     while len(work_items) > 0:
-        current_work_item = work_items.pop(0)
+        current_work_item = work_items.popleft()
         for btn in current_work_item[1]:
             new_state = apply_button_to_current_joltage_state(current_work_item[0], btn)
-            serialised_new_state = ".".join(str(x) for x in new_state)
-            if serialised_new_state in visited_states:
+            if tuple(new_state) in visited_states:
                 continue
-            visited_states.add(serialised_new_state)
+            visited_states.add(tuple(new_state))
 
             if all(elem == 0 for elem in new_state):
                 return current_work_item[2]
