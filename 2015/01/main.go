@@ -6,29 +6,33 @@ import (
 	"os"
 )
 
+func Solve(input string) (int, int) {
+	floor := 0
+	firstBasementIndex := -1
+
+	for i, ch := range input {
+		switch ch {
+		case '(':
+			floor++
+		case ')':
+			floor--
+		}
+
+		if firstBasementIndex == -1 && floor == -1 {
+			firstBasementIndex = i + 1
+		}
+	}
+
+	return floor, firstBasementIndex
+}
+
 func main() {
 	data, err := os.ReadFile("01/input.txt")
-
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to read input: %v", err)
 	}
 
-	firstMinusOneLocation := -1
-	currentLocation := 0
-
-	for i, b := range data {
-		switch b {
-		case '(':
-			currentLocation++
-		case ')':
-			currentLocation--
-		}
-
-		if firstMinusOneLocation == -1 && currentLocation == -1 {
-			firstMinusOneLocation = i + 1
-		}
-	}
-
-	fmt.Println("Task 1: ", currentLocation)
-	fmt.Println("Task 2: ", firstMinusOneLocation)
+	part1, part2 := Solve(string(data))
+	fmt.Println("Task 1:", part1)
+	fmt.Println("Task 2:", part2)
 }
